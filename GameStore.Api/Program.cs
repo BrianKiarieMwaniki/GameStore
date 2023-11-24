@@ -4,11 +4,11 @@ using GameStore.Api.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-builder.Services.AddRepositories(configuration); 
+builder.Services.AddRepositories(configuration);
 
 var app = builder.Build();
 
-app.Services.InitializeDb();
+await app.Services.InitializeDbAsync();
 
 app.MapGameEndpoints();
 
