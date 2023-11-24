@@ -13,25 +13,25 @@ public class EFGamesRepository : IGamesRepository
         this.dbContext = dbContext;
     }
 
-    public IEnumerable<Game> GetAll() => dbContext.Games.AsNoTracking().ToList();
-    
+    public async Task<IEnumerable<Game>> GetAllAsync() => await dbContext.Games.AsNoTracking().ToListAsync();
 
-    public Game? Get(int id) => dbContext.Games.Find(id);
-    
-    public void Create(Game game)
+
+    public async Task<Game?> GetAsync(int id) => await dbContext.Games.FindAsync(id);
+
+    public  async Task CreateAsync(Game game)
     {
-       dbContext.Games.Add(game);
-       dbContext.SaveChanges();
+        dbContext.Games.Add(game);
+        await dbContext.SaveChangesAsync();
     }
 
-    public void Update(Game game)
+    public async Task UpdateAsync(Game game)
     {
         dbContext.Update(game);
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync();
     }
 
-    public void Delete(int id)
+    public async Task DeleteAsync(int id)
     {
-        dbContext.Games.Where(g => g.Id == id).ExecuteDelete();
+        await dbContext.Games.Where(g => g.Id == id).ExecuteDeleteAsync();
     }
 }
