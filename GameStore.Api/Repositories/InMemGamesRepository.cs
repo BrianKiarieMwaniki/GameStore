@@ -12,26 +12,30 @@ public class InMemGamesRepository : IGamesRepository
         new Game() {Id=4, Name = "HitMan: Blood Money", Price = 7.50M, Genre = "Action", ImageUri = "https://placehold.co/100", ReleaseDate = new DateTime(2005, 2, 17)},
     };
 
-    public IEnumerable<Game> GetAll() => games;
+    public async Task<IEnumerable<Game>> GetAllAsync() => await Task.FromResult(games);
 
-    public Game? Get(int id) => games.Find(g => g.Id == id) ?? null;
+    public async Task<Game?> GetAsync(int id) => await Task.FromResult(games.Find(g => g.Id == id) ?? null);
 
-    public void Create(Game game) 
+    public Task CreateAsync(Game game)
     {
         game.Id = games.Max(g => g.Id) + 1;
         games.Add(game);
+        return Task.CompletedTask;
     }
 
-    public void Update(Game updateGame)
+    public Task UpdateAsync(Game updateGame)
     {
         var index = games.FindIndex(g => g.Id == updateGame.Id);
 
         games[index] = updateGame;
+
+        return Task.CompletedTask;
     }
 
-    public void Delete(int id)
+    public Task DeleteAsync(int id)
     {
         var index = games.FindIndex(g => g.Id == id);
         games.RemoveAt(index);
+        return Task.CompletedTask;
     }
 }
