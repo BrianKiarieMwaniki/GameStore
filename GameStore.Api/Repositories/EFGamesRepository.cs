@@ -7,10 +7,12 @@ namespace GameStore.Api.Repositories;
 public class EFGamesRepository : IGamesRepository
 {
     private readonly GameStoreContext dbContext;
+    private readonly ILogger<EFGamesRepository> _logger;
 
-    public EFGamesRepository(GameStoreContext dbContext)
+    public EFGamesRepository(GameStoreContext dbContext, ILogger<EFGamesRepository> logger)
     {
         this.dbContext = dbContext;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<Game>> GetAllAsync() => await dbContext.Games.AsNoTracking().ToListAsync();
@@ -22,6 +24,8 @@ public class EFGamesRepository : IGamesRepository
     {
         dbContext.Games.Add(game);
         await dbContext.SaveChangesAsync();
+
+        _logger.LogInformation("Created game {Name} with price {Price}.", game.Name, game.Price);
     }
 
     public async Task UpdateAsync(Game game)
