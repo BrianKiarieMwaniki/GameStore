@@ -1,3 +1,4 @@
+using GameStore.Api.Authorization;
 using GameStore.Api.Dtos;
 using GameStore.Api.Entities;
 using GameStore.Api.Repositories;
@@ -8,7 +9,6 @@ public static class GameEndpoints
 {
     private const string GetGameEndpointName = "GetGame";
 
-
     public static RouteGroupBuilder MapGameEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/games")
@@ -18,10 +18,9 @@ public static class GameEndpoints
         {
             var games = await repository.GetAllAsync();
 
-            return games.Select( g => g.AsDto());
-        
+            return games.Select(g => g.AsDto());
+
         });
-            
 
         group.MapGet("/{id}", async (IGamesRepository repository, int id) =>
         {
@@ -30,7 +29,8 @@ public static class GameEndpoints
             if (game == null) return Results.NotFound();
             return Results.Ok(game.AsDto());
 
-        }).WithName(GetGameEndpointName);
+        }).WithName(GetGameEndpointName)
+        .RequireAuthorization(Policies.ReadAccess);
 
         group.MapPost("/", async (IGamesRepository repository, CreateGameDto gameDto) =>
         {
@@ -46,7 +46,7 @@ public static class GameEndpoints
             await repository.CreateAsync(game);
 
             return Results.CreatedAtRoute(GetGameEndpointName, new { id = game.Id }, game);
-        });
+        }).RequireAuthorization(Policies.WriteAccess);
 
         group.MapPut("/{id}", async (IGamesRepository repository, int id, UpdateGameDto gameDto) =>
         {
@@ -66,7 +66,7 @@ public static class GameEndpoints
             await repository.UpdateAsync(existingGame);
 
             return Results.NoContent();
-        });
+        }).RequireAuthorization(Policies.WriteAccess);
 
         group.MapDelete("/{id}", async (IGamesRepository repository, int id) =>
         {
@@ -77,7 +77,7 @@ public static class GameEndpoints
             await repository.DeleteAsync(id);
 
             return Results.NoContent();
-        });
+        }).RequireAuthorization(Policies.WriteAccess);
 
         return group;
     }
