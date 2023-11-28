@@ -18,7 +18,7 @@ public static class GameEndpoints
         {
             var games = await repository.GetAllAsync();
 
-            return games.Select(g => g.AsDto());
+            return Results.Ok(games.Select(g => g.AsDto()));
 
         });
 
