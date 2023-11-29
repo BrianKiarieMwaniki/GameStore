@@ -7,30 +7,61 @@ namespace GameStore.Api.Endpoints;
 
 public static class GameEndpoints
 {
-    private const string GetGameEndpointName = "GetGame";
+    private const string GetGameV1EndpointName = "GetGameV1";
+    private const string GetGameV2EndpointName = "GetGameV2";
 
     public static RouteGroupBuilder MapGameEndpoints(this IEndpointRouteBuilder routes)
     {
-        var group = routes.MapGroup("/api/games")
-                .WithParameterValidation();
-
+        var group = routes.NewVersionedApi()
+                            .MapGroup("/api/games")
+                            .HasApiVersion(1.0)
+                            .HasApiVersion(2.0)
+                            .WithParameterValidation();
+        
         group.MapGet("/", async (IGamesRepository repository) =>
         {
             var games = await repository.GetAllAsync();
 
-            return Results.Ok(games.Select(g => g.AsDto()));
+            return Results.Ok(games.Select(g => g.AsDtoV1()));
 
-        });
+        })
+        .MapToApiVersion(1.0);
 
         group.MapGet("/{id}", async (IGamesRepository repository, int id) =>
         {
             Game? game = await repository.GetAsync(id);
 
             if (game == null) return Results.NotFound();
-            return Results.Ok(game.AsDto());
+            return Results.Ok(game.AsDtoV1());
 
-        }).WithName(GetGameEndpointName)
-        .RequireAuthorization(Policies.ReadAccess);
+        })
+        .WithName(GetGameV1EndpointName)
+        .RequireAuthorization(Policies.ReadAccess)
+        .MapToApiVersion(1.0);
+
+        #region V2 endpoints
+        group.MapGet("/", async (IGamesRepository repository) =>
+        {
+            var games = await repository.GetAllAsync();
+
+            return Results.Ok(games.Select(g => g.AsDtoV2()));
+
+        })
+        .MapToApiVersion(2.0);
+
+        group.MapGet("/{id}", async (IGamesRepository repository, int id) =>
+        {
+            Game? game = await repository.GetAsync(id);
+
+            if (game == null) return Results.NotFound();
+            return Results.Ok(game.AsDtoV2());
+
+        })
+        .WithName(GetGameV2EndpointName)
+        .RequireAuthorization(Policies.ReadAccess)
+        .MapToApiVersion(2.0);
+
+        #endregion
 
         group.MapPost("/", async (IGamesRepository repository, CreateGameDto gameDto) =>
         {
@@ -45,8 +76,10 @@ public static class GameEndpoints
 
             await repository.CreateAsync(game);
 
-            return Results.CreatedAtRoute(GetGameEndpointName, new { id = game.Id }, game);
-        }).RequireAuthorization(Policies.WriteAccess);
+            return Results.CreatedAtRoute(GetGameV1EndpointName, new { id = game.Id }, game);
+        })
+        .MapToApiVersion(1.0)
+        .RequireAuthorization(Policies.WriteAccess);
 
         group.MapPut("/{id}", async (IGamesRepository repository, int id, UpdateGameDto gameDto) =>
         {
@@ -66,7 +99,9 @@ public static class GameEndpoints
             await repository.UpdateAsync(existingGame);
 
             return Results.NoContent();
-        }).RequireAuthorization(Policies.WriteAccess);
+        })
+        .RequireAuthorization(Policies.WriteAccess)
+        .MapToApiVersion(1.0);
 
         group.MapDelete("/{id}", async (IGamesRepository repository, int id) =>
         {
@@ -77,7 +112,9 @@ public static class GameEndpoints
             await repository.DeleteAsync(id);
 
             return Results.NoContent();
-        }).RequireAuthorization(Policies.WriteAccess);
+        })
+        .RequireAuthorization(Policies.WriteAccess)
+        .MapToApiVersion(1.0);
 
         return group;
     }

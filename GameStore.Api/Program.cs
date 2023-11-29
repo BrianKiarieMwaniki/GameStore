@@ -12,6 +12,11 @@ builder.Services.AddRepositories(configuration);
 builder.Services.AddAuthentication().AddJwtBearer();
 builder.Services.AddGameStoreAuthorization();
 
+builder.Services.AddApiVersioning(options => {
+    options.DefaultApiVersion = new(1.0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.ConfigureExceptionHandler());
