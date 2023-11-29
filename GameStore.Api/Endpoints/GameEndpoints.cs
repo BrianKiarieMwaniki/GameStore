@@ -18,7 +18,7 @@ public static class GameEndpoints
         {
             var games = await repository.GetAllAsync();
 
-            return Results.Ok(games.Select(g => g.AsDto()));
+            return Results.Ok(games.Select(g => g.AsDtoV1()));
 
         });
 
@@ -27,7 +27,7 @@ public static class GameEndpoints
             Game? game = await repository.GetAsync(id);
 
             if (game == null) return Results.NotFound();
-            return Results.Ok(game.AsDto());
+            return Results.Ok(game.AsDtoV1());
 
         }).WithName(GetGameEndpointName)
         .RequireAuthorization(Policies.ReadAccess);
