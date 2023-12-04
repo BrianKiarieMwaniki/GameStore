@@ -17,6 +17,17 @@ builder.Services.AddApiVersioning(options => {
     options.AssumeDefaultVersionWhenUnspecified = true;
 });
 
+builder.Services.AddCors(options => 
+{
+   options.AddDefaultPolicy(corsBuilder => 
+   {
+    var allowedOrigin = configuration["AllowedOrigin"] ?? throw new InvalidOperationException("AllowedOrigin is not set");
+    corsBuilder.WithOrigins(allowedOrigin)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+   }); 
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.ConfigureExceptionHandler());
@@ -28,5 +39,7 @@ await app.Services.InitializeDbAsync();
 app.UseHttpLogging();
 
 app.MapGameEndpoints();
+
+app.UseCors();
 
 app.Run();
