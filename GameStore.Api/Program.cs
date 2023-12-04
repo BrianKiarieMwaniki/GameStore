@@ -1,4 +1,5 @@
 using GameStore.Api.Authorization;
+using GameStore.Api.Cors;
 using GameStore.Api.Data;
 using GameStore.Api.Endpoints;
 using GameStore.Api.ErrorHandling;
@@ -17,6 +18,8 @@ builder.Services.AddApiVersioning(options => {
     options.AssumeDefaultVersionWhenUnspecified = true;
 });
 
+builder.Services.AddGameStoreCors(configuration);
+
 var app = builder.Build();
 
 app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.ConfigureExceptionHandler());
@@ -28,5 +31,7 @@ await app.Services.InitializeDbAsync();
 app.UseHttpLogging();
 
 app.MapGameEndpoints();
+
+app.UseCors();
 
 app.Run();
