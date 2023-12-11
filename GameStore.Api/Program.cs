@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using GameStore.Api.Authorization;
 using GameStore.Api.Cors;
 using GameStore.Api.Data;
@@ -10,12 +11,16 @@ var configuration = builder.Configuration;
 
 builder.Services.AddRepositories(configuration);
 
-builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthentication().AddJwtBearer()
+                                    .AddJwtBearer("Auth0");
+
 builder.Services.AddGameStoreAuthorization();
 
 builder.Services.AddApiVersioning(options => {
     options.DefaultApiVersion = new(1.0);
     options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = new HeaderApiVersionReader("X-API-Version");
 });
 
 builder.Services.AddGameStoreCors(configuration);
