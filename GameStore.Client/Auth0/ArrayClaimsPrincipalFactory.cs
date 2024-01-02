@@ -35,10 +35,26 @@ public class ArrayClaimsPrincipalFactory : AccountClaimsPrincipalFactory<RemoteU
             var value = prop.Value;
             if (value != null && value is JsonElement element && element.ValueKind == JsonValueKind.Array)
             {
-                // Remove the claim with an array value and create a separate one for each role.
-                claimsIdentity.RemoveClaim(claimsIdentity.FindFirst(prop.Key));
-                var claims = element.EnumerateArray().Select(x => new Claim(prop.Key, x.ToString()));
-                claimsIdentity.AddClaims(claims);
+                //Check if the claim exists before removing it
+                var existingClaim = claimsIdentity.FindFirst(prop.Key);
+                if(existingClaim != null)
+                {
+                    claimsIdentity.RemoveClaim(existingClaim);
+                }
+
+                if(key.Contains("role", StringComparison.OrdinalIgnoreCase))
+                {
+                    //Handle role claims explicitly
+                    var roleClaims = element.EnumerateArray()
+                    .Select(x => new Claim(ClaimTypes.Role, x.ToString()));
+                    claimsIdentity.AddClaims(roleClaims);
+                }
+                else
+                {
+                    //Handle other array claims
+                    var claims = element.EnumerateArray().Select(x => new Claim(prop.Key, x.ToString()));
+                    claimsIdentity.AddClaims(claims);
+                }               
             }
         }
     }
