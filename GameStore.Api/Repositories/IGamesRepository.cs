@@ -8,10 +8,12 @@ namespace GameStore.Api.Repositories
 {
     public interface IGamesRepository
     {
-        Task<IEnumerable<Game>> GetAllAsync();
+        Task<IEnumerable<Game>> GetAllAsync(int pageNumber, int pageSize);
         Task<Game?> GetAsync(int id);
         Task CreateAsync(Game game);
         Task UpdateAsync(Game game);
         Task DeleteAsync(int id);
+
+        Task<int> CountAsync();
     }
 }
