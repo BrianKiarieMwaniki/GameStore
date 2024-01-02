@@ -20,6 +20,8 @@ public static class AuthorizationExtensions
                 builder.RequireClaim("scope", "games:write").RequireRole("Admin")
                 .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, "Auth0");
             });
+
+             
         });
 
         return services;
