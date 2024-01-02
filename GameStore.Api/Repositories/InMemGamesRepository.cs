@@ -12,7 +12,13 @@ public class InMemGamesRepository : IGamesRepository
         new Game() {Id=4, Name = "HitMan: Blood Money", Price = 7.50M, Genre = "Action", ImageUri = "https://placehold.co/100", ReleaseDate = new DateTime(2005, 2, 17)},
     };
 
-    public async Task<IEnumerable<Game>> GetAllAsync() => await Task.FromResult(games);
+    public async Task<IEnumerable<Game>> GetAllAsync(int pageNumber, int pageSize)
+    {
+        var skipCount = (pageNumber - 1) * pageSize;
+
+        return await Task.FromResult(games.Skip(skipCount).Take(pageSize));
+
+    } 
 
     public async Task<Game?> GetAsync(int id) => await Task.FromResult(games.Find(g => g.Id == id) ?? null);
 
@@ -37,5 +43,10 @@ public class InMemGamesRepository : IGamesRepository
         var index = games.FindIndex(g => g.Id == id);
         games.RemoveAt(index);
         return Task.CompletedTask;
+    }
+
+    public async Task<int> CountAsync()
+    {
+        return await Task.FromResult(games.Count);
     }
 }
