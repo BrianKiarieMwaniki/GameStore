@@ -20,9 +20,13 @@ public static class GameEndpoints
                             .WithParameterValidation();
         
         group.MapGet("/", async (IGamesRepository repository, ILoggerFactory loggerFactory,
-                                [AsParameters]GetGamesDtoV1 request) =>
+                                [AsParameters]GetGamesDtoV1 request, HttpContext context) =>
         {
             var games = await repository.GetAllAsync(request.PageNumber, request.PageSize);
+
+            var totalCount = await repository.CountAsync();
+
+            context.Response.AddPaginationHeader(totalCount, request.PageSize);
 
             return Results.Ok(games.Select(g => g.AsDtoV1()));
 
@@ -42,9 +46,13 @@ public static class GameEndpoints
         .MapToApiVersion(1.0);
 
         #region V2 endpoints
-        group.MapGet("/", async (IGamesRepository repository, [AsParameters]GetGamesDtoV2 request) =>
+        group.MapGet("/", async (IGamesRepository repository, [AsParameters]GetGamesDtoV2 request, HttpContext context) =>
         {
             var games = await repository.GetAllAsync(request.PageNumber, request.PageSize);
+
+            var totalCount = await repository.CountAsync();
+
+            context.Response.AddPaginationHeader(totalCount, request.PageSize);
 
             return Results.Ok(games.Select(g => g.AsDtoV2()));
 
