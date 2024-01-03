@@ -47,9 +47,6 @@ app.MapGameEndpoints();
 
 app.UseCors();
 
-if(app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-}
+app.UseGameStoreSwagger();
 
 app.Run();
