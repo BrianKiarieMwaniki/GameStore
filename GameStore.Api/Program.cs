@@ -5,6 +5,9 @@ using GameStore.Api.Data;
 using GameStore.Api.Endpoints;
 using GameStore.Api.ErrorHandling;
 using GameStore.Api.Middleware;
+using GameStore.Api.OpenAPI;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -21,9 +24,14 @@ builder.Services.AddApiVersioning(options => {
     options.AssumeDefaultVersionWhenUnspecified = true;
     options.ReportApiVersions = true;
     options.ApiVersionReader = new HeaderApiVersionReader("X-API-Version");
-});
+})
+.AddApiExplorer(options => options.GroupNameFormat = "'v'VVV");
 
 builder.Services.AddGameStoreCors(configuration);
+
+builder.Services.AddSwaggerGen()
+                .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>()
+                .AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
@@ -38,5 +46,7 @@ app.UseHttpLogging();
 app.MapGameEndpoints();
 
 app.UseCors();
+
+app.UseGameStoreSwagger();
 
 app.Run();
