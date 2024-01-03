@@ -2,6 +2,7 @@ using GameStore.Api.Authorization;
 using GameStore.Api.Dtos;
 using GameStore.Api.Entities;
 using GameStore.Api.Repositories;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameStore.Api.Endpoints;
@@ -33,12 +34,12 @@ public static class GameEndpoints
         })
         .MapToApiVersion(1.0);
 
-        group.MapGet("/{id}", async (IGamesRepository repository, int id) =>
+        group.MapGet("/{id}", async Task<Results<Ok<GameDtoV1>,NotFound>>  (IGamesRepository repository, int id) =>
         {
             Game? game = await repository.GetAsync(id);
 
-            if (game == null) return Results.NotFound();
-            return Results.Ok(game.AsDtoV1());
+            if (game == null) return TypedResults.NotFound();
+            return TypedResults.Ok(game.AsDtoV1());
 
         })
         .WithName(GetGameV1EndpointName)
@@ -59,12 +60,12 @@ public static class GameEndpoints
         })
         .MapToApiVersion(2.0);
 
-        group.MapGet("/{id}", async (IGamesRepository repository, int id) =>
+        group.MapGet("/{id}", async Task<Results<Ok<GameDtoV2>, NotFound>> (IGamesRepository repository, int id) =>
         {
             Game? game = await repository.GetAsync(id);
 
-            if (game == null) return Results.NotFound();
-            return Results.Ok(game.AsDtoV2());
+            if (game == null) return TypedResults.NotFound();
+            return TypedResults.Ok(game.AsDtoV2());
 
         })
         .WithName(GetGameV2EndpointName)
@@ -73,7 +74,7 @@ public static class GameEndpoints
 
         #endregion
 
-        group.MapPost("/", async (IGamesRepository repository, CreateGameDto gameDto) =>
+        group.MapPost("/", async Task<CreatedAtRoute<GameDtoV1>> (IGamesRepository repository, CreateGameDto gameDto) =>
         {
             Game game = new()
             {
@@ -86,18 +87,18 @@ public static class GameEndpoints
 
             await repository.CreateAsync(game);
 
-            return Results.CreatedAtRoute(GetGameV1EndpointName, new { id = game.Id }, game);
+            return TypedResults.CreatedAtRoute(game.AsDtoV1(),GetGameV1EndpointName, new { id = game.Id });
         })
         .MapToApiVersion(1.0)
         .RequireAuthorization(Policies.WriteAccess);
 
-        group.MapPut("/{id}", async (IGamesRepository repository, int id, UpdateGameDto gameDto) =>
+        group.MapPut("/{id}", async Task<Results<NotFound, NoContent>> (IGamesRepository repository, int id, UpdateGameDto gameDto) =>
         {
             Game? existingGame = await repository.GetAsync(id);
 
             if (existingGame is null)
             {
-                return Results.NotFound();
+                return TypedResults.NotFound();
             }
 
             existingGame.Name = gameDto.Name;
@@ -108,7 +109,7 @@ public static class GameEndpoints
 
             await repository.UpdateAsync(existingGame);
 
-            return Results.NoContent();
+            return TypedResults.NoContent();
         })
         .RequireAuthorization(Policies.WriteAccess)
         .MapToApiVersion(1.0);
@@ -117,11 +118,12 @@ public static class GameEndpoints
         {
             var gameToDelete = await repository.GetAsync(id);
 
-            if (gameToDelete is null) return Results.NotFound();
+            if (gameToDelete is not null) 
+            {
+                await repository.DeleteAsync(id);
+            }
 
-            await repository.DeleteAsync(id);
-
-            return Results.NoContent();
+            return TypedResults.NoContent();
         })
         .RequireAuthorization(Policies.WriteAccess)
         .MapToApiVersion(1.0);
