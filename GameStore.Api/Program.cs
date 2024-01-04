@@ -56,6 +56,8 @@ app.UseHttpLogging();
 
 app.MapGameEndpoints();
 
+app.MapImagesEndpoints();
+
 app.UseCors();
 
 app.UseGameStoreSwagger();
