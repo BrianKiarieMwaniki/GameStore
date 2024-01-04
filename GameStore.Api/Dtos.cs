@@ -36,7 +36,7 @@ public record CreateGameDto(
     [Required][StringLength(20)] string Genre,
     [Range(1, 100)] decimal Price,
     DateTime ReleaseDate,
-    [Url][StringLength(50)] string ImageUri
+    [Url][StringLength(200)] string ImageUri
 );
 
 public record UpdateGameDto(
@@ -44,5 +44,7 @@ public record UpdateGameDto(
     [Required][StringLength(20)] string Genre,
     [Range(1, 100)] decimal Price,
     DateTime ReleaseDate,
-    [Url][StringLength(50)] string ImageUri
+    [Url][StringLength(200)] string ImageUri
 );
+
+public record ImageUploadDto(string BlobUri);
